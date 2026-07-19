@@ -32,6 +32,11 @@ easings.easingType = {
     InOut = "InOut",
 }
 
+easings.swap = {
+    [easings.easingType.In] = easings.easingType.Out,
+    [easings.easingType.Out] = easings.easingType.In,
+}
+
 ---@param x number
 function easings.EaseLinear(x)
     return x

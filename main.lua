@@ -6,13 +6,14 @@ shell.init()
 tm.os.DoFile("scripts/timer")
 tm.os.DoFile("scripts/animation")
 tm.os.DoFile("scripts/easings")
+tm.os.DoFile("scripts/tween")
 
 tm.os.SetModTargetDeltaTime(1/60)
 
 ---@type ModGameObject
 local obj
 
----@type animationTable?
+---@type animationPlayer?
 local a
 
 ---@param player ModPlayer
@@ -29,20 +30,15 @@ function OnPlayerJoined(player)
 end
 
 
-function Void(data)
-    Print(data.data)
-end
-
-
 function update()
     shell.flush()
     timer.UpdateTimers()
-    animation.UpdateAnimations()
+    tween.UpdateTweeners()
 end
 
 
 function Play(param)
-    a = animation.PlayAnimation(obj, json.parse(tm.os.ReadAllText_Static("animations/testAnimation.json")), tonumber(param))
+    a = animation.PlayAnimation(obj, json.parse(tm.os.ReadAllText_Static("animations/monorail animation.json")), tonumber(param))
 end
 shell.addCommand(Play, "play")
 

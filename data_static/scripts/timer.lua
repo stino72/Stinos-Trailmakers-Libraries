@@ -125,12 +125,14 @@ function _UpdateTimer(timer, index)
 
     if timer.loop then
         timer.timeLeft = timer.duration + timer.timeLeft
-    else
-        if timer.deleteOnComplete then
-            table.remove(timers, index)
-            return
-        end
-        timer.active = false
-        timer.timeLeft = timer.duration
+        return
     end
+
+    if timer.deleteOnComplete then
+        table.remove(timers, index)
+        return
+    end
+
+    timer.active = false
+    timer.timeLeft = timer.duration
 end

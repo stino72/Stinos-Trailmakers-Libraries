@@ -11,9 +11,6 @@ _G.animation = {
 ---@field keyframes table
 ---@field animationIndex integer
 ---@field interupted boolean
----@field reversed boolean
----@field reversedKeyframes table
----@field KeyframeBuffer table
 ---@field completionCallback function?
 ---@field data any?
 local animationPlayer = {}
@@ -61,6 +58,7 @@ end
 ---@param timeScale number?
 ---@param CompletionCallback function?
 ---@param data any?
+---@return animationPlayer?
 function animation.PlayAnimation(object, animationList, timeScale, CompletionCallback, data)
     local instance = setmetatable({}, animationPlayer)
 
@@ -71,7 +69,6 @@ function animation.PlayAnimation(object, animationList, timeScale, CompletionCal
     instance.keyframes = animationList["keyframes"]
     instance.animationIndex = 1
     instance.interupted = false
-    instance.reversed = false
 
     if #instance.keyframes <= 0 then
         Print("Animation does not have keyframes")
@@ -79,8 +76,7 @@ function animation.PlayAnimation(object, animationList, timeScale, CompletionCal
     end
 
     if animationList["loop"] == animation.loopModes.pingPong then
-        instance.reversedKeyframes = animation._internals.GenerateReversedKeyframes(animationList)
-        instance.KeyframeBuffer = instance.keyframes
+        animation.utils.ConbineTables(instance.keyframes, animation._internals.GenerateReversedKeyframes(animationList))
     end
 
     instance.completionCallback = CompletionCallback
@@ -157,7 +153,7 @@ function animation._internals.ResetObjectPos(object, transform)
 end
 
 
----@param data animationCallbackData
+---@param data animationCallbackData -- FIX: also gets called with tweenCallbackData, 
 function animation._internals.PlayAnimationFrame(data)
     ---@type animationPlayer
     local aPlayer = data.data
@@ -171,9 +167,17 @@ function animation._internals.PlayAnimationFrame(data)
         return
     end
 
+    if aPlayer.loop == animation.loopModes.pingPong and aPlayer.animationIndex == #aPlayer.keyframes * 0.5 + 1 then
+        if aPlayer.completionCallback then
+            aPlayer.completionCallback(animation._internals.CreateCallbackData(aPlayer.object, aPlayer.data))
+        end
+    end
+
     local a = aPlayer.keyframes[aPlayer.animationIndex]
         
     local type = a["type"]
+
+    Print(aPlayer.animationIndex, type)
 
     while true do
         aPlayer.animationIndex = aPlayer.animationIndex + 1
@@ -223,14 +227,6 @@ function animation._internals.OnAnimationComplete(anim)
 
     if anim.loop == animation.loopModes.loop then
         animation._internals.ResetObjectPos(anim.object, anim.startTransform)
-    elseif anim.loop == animation.loopModes.pingPong then
-        anim.reversed = not anim.reversed
-
-        if anim.reversed then
-            anim.keyframes = anim.reversedKeyframes
-        else
-            anim.keyframes = anim.KeyframeBuffer
-        end
     end
 
     anim.animationIndex = 1
@@ -253,4 +249,15 @@ function animation.utils.TableCopy(t)
         t2[k] = v
     end
     return t2
+end
+
+
+---@param t table
+---@param a table
+---@return table
+function animation.utils.ConbineTables(t, a)
+    for i, v in ipairs(a) do
+        table.insert(t, v)
+    end
+    return t
 end

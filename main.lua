@@ -38,9 +38,14 @@ end
 
 
 function Play(param)
-    a = animation.PlayAnimation(obj, json.parse(tm.os.ReadAllText_Static("animations/monorail animation.json")), tonumber(param))
+    a = animation.PlayAnimation(obj, json.parse(tm.os.ReadAllText_Static("animations/monorail animation.json")), tonumber(param), OnAnimationComplete, "complete")
 end
 shell.addCommand(Play, "play")
+
+
+function OnAnimationComplete(data)
+    Print(data.data)
+end
 
 
 function Stop()

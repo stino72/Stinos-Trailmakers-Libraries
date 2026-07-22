@@ -35,6 +35,7 @@ easings.easingType = {
 easings.swap = {
     [easings.easingType.In] = easings.easingType.Out,
     [easings.easingType.Out] = easings.easingType.In,
+    [easings.easingType.InOut] = easings.easingType.InOut,
 }
 
 ---@param x number
@@ -292,6 +293,7 @@ function easings.EaseInOutBounce(x)
         return (1 + easings.EaseOutBounce(2 * x - 1)) / 2
     end
 end
+
 
 local easingFunctions = {
     Linear = {

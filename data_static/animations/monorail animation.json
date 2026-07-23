@@ -24,146 +24,146 @@
         },
         {
             "type" : "position",
-            "end value" : {
+            "endValue" : {
                 "x" : 390,
                 "y" : 220,
                 "z" : -4577
             },
             "duration" : 10,
             "easing" : "Sine",
-            "easing type" : "In",
+            "easingType" : "In",
             "parallel" : false
         },
         {
             "type" : "position",
-            "end value" : {
+            "endValue" : {
                 "x" : 384,
                 "y" : 220,
                 "z" : -4576
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : false
         },
         {
             "type" : "rotation",
-            "end value" : {
+            "endValue" : {
                 "x" : 0,
                 "y" : 102,
                 "z" : 0
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : true
         },
         {
             "type" : "position",
-            "end value" : {
+            "endValue" : {
                 "x" : 379,
                 "y" : 220,
                 "z" : -4574
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : false
         },
         {
             "type" : "rotation",
-            "end value" : {
+            "endValue" : {
                 "x" : 0,
                 "y" : 130,
                 "z" : 0
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : true
         },
         {
             "type" : "position",
-            "end value" : {
+            "endValue" : {
                 "x" : 376,
                 "y" : 220,
                 "z" : -4570
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : false
         },
         {
             "type" : "rotation",
-            "end value" : {
+            "endValue" : {
                 "x" : 0,
                 "y" : 150,
                 "z" : 0
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : true
         },
         {
             "type" : "position",
-            "end value" : {
+            "endValue" : {
                 "x" : 374,
                 "y" : 220,
                 "z" : -4565
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : false
         },
         {
             "type" : "rotation",
-            "end value" : {
+            "endValue" : {
                 "x" : 0,
                 "y" : 168,
                 "z" : 0
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : true
         },
         {
             "type" : "position",
-            "end value" : {
+            "endValue" : {
                 "x" : 373,
                 "y" : 220,
                 "z" : -4560
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : false
         },
         {
             "type" : "rotation",
-            "end value" : {
+            "endValue" : {
                 "x" : 0,
                 "y" : 180,
                 "z" : 0
             },
             "duration" : 0.3,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : true
         },
         {
             "type" : "position",
-            "end value" : {
+            "endValue" : {
                 "x" : 373,
                 "y" : 220,
                 "z" : -4550
             },
             "duration" : 1,
             "easing" : "Linear",
-            "easing type" : "Out",
+            "easingType" : "Out",
             "parallel" : false
         },
         {

@@ -13,7 +13,7 @@ tm.os.SetModTargetDeltaTime(1/60)
 ---@type ModGameObject
 local obj
 
----@type animationPlayer?
+---@type AnimationPlayer?
 local a
 
 ---@param player ModPlayer

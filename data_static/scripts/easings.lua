@@ -10,7 +10,7 @@ local n1 = 7.5625
 local d1 = 2.75
 
 ---easings [https://easings.net/]
----@enum easing
+---@enum Easing
 easings.easing = {
     Linear = "Linear",
     Sine = "Sine",
@@ -25,7 +25,7 @@ easings.easing = {
     Bounce = "Bounce",
 }
 
----@enum easingType
+---@enum EasingType
 easings.easingType = {
     In = "In",
     Out = "Out",
@@ -353,8 +353,8 @@ local easingFunctions = {
     },
 }
 
----@param easing easing
----@param easingType easingType
+---@param easing Easing
+---@param easingType EasingType
 ---@return function
 function easings.GetEasingFunction(easing, easingType)
     return easingFunctions[easing][easingType]

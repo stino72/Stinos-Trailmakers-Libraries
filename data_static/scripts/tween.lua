@@ -2,7 +2,7 @@ _G.tween = {
     _internals = {}
 }
 
----@class tweener
+---@class Tweener
 ---@field object ModGameObject
 ---@field startValue ModVector3
 ---@field endValue ModVector3
@@ -12,16 +12,16 @@ _G.tween = {
 ---@field completionCallback function?
 ---@field data any?
 ---@field animationCallback function
-local tweener = {}
-tweener.__index = tweener
+local Tweener = {}
+Tweener.__index = Tweener
 
----@class tweenCallbackData
+---@class TweenCallbackData
 ---@field object ModGameObject
 ---@field data any?
-local tweenCallbackData = {}
-tweenCallbackData.__index = tweenCallbackData
+local TweenCallbackData = {}
+TweenCallbackData.__index = TweenCallbackData
 
----@type tweener[]
+---@type Tweener[]
 local tweeners = {}
 
 ---@param animationCallback function
@@ -29,18 +29,19 @@ local tweeners = {}
 ---@param startValue ModVector3
 ---@param endValue ModVector3
 ---@param duration number
----@param easing easing?
----@param easingType easingType?
+---@param easing Easing?
+---@param easingType EasingType?
 ---@param CompletionCallback function?
 ---@param data any?
 function tween._internals.SetupTweener(animationCallback, object, startValue, endValue, duration, easing, easingType, CompletionCallback, data)
-    local instance = setmetatable({}, tweener)
+    local instance = setmetatable({}, Tweener)
 
     instance.object = object
     instance.startValue = startValue
     instance.endValue = endValue
     instance.duration = duration
     instance.timeLeft = duration
+
     instance.easingFunction = easings.GetEasingFunction(easing or animation.easing.Linear, easingType or animation.easingType.In)
     instance.completionCallback = CompletionCallback
     instance.animationCallback = animationCallback
@@ -50,13 +51,14 @@ function tween._internals.SetupTweener(animationCallback, object, startValue, en
 end
 
 
----@param t tweener
----@return tweenCallbackData
-function tween._internals.CreateTweenCallbackData(t)
-    local instance = setmetatable({}, tweenCallbackData)
+---@param object ModGameObject
+---@param data any?
+---@return TweenCallbackData
+function tween._internals.CreateTweenCallbackData(object, data)
+    local instance = setmetatable({}, TweenCallbackData)
 
-    instance.object = t.object
-    instance.data = t.data
+    instance.object = object
+    instance.data = data
 
     return instance
 end
@@ -65,8 +67,8 @@ end
 ---@param object ModGameObject
 ---@param endPostition ModVector3
 ---@param duration number
----@param easing easing?
----@param easingType easingType?
+---@param easing Easing?
+---@param easingType EasingType?
 ---@param CompletionCallback function?
 ---@param data any?
 function tween.AnimatePosition(object, endPostition, duration, easing, easingType, CompletionCallback, data)
@@ -77,8 +79,8 @@ end
 ---@param object ModGameObject
 ---@param endRotation ModVector3
 ---@param duration number
----@param easing easing?
----@param easingType easingType?
+---@param easing Easing?
+---@param easingType EasingType?
 ---@param CompletionCallback function?
 ---@param data any?
 function tween.AnimateRotation(object, endRotation, duration, easing, easingType, CompletionCallback, data)
@@ -89,8 +91,8 @@ end
 ---@param object ModGameObject
 ---@param endScale ModVector3
 ---@param duration number
----@param easing easing?
----@param easingType easingType?
+---@param easing Easing?
+---@param easingType EasingType?
 ---@param CompletionCallback function?
 ---@param data any?
 function tween.AnimateScale(object, endScale, duration, easing, easingType, CompletionCallback, data)
@@ -112,43 +114,43 @@ function tween.UpdateTweeners()
 end
 
 
----@param t tweener
+---@param tweener Tweener
 ---@param index integer
-function tween._internals.UpdateAnimations(t, index)
-    t.timeLeft = t.timeLeft - tm.os.GetModDeltaTime()
+function tween._internals.UpdateAnimations(tweener, index)
+    tweener.timeLeft = tweener.timeLeft - tm.os.GetModDeltaTime()
 
-    local progress = math.min((t.duration - t.timeLeft) / t.duration, 1)
+    local progress = math.min((tweener.duration - tweener.timeLeft) / tweener.duration, 1)
 
-    t.animationCallback(t, t.easingFunction(progress))
+    tweener.animationCallback(tweener, tweener.easingFunction(progress))
 
-    if t.timeLeft > 0 then
+    if tweener.timeLeft > 0 then
         return
     end
 
-    if t.completionCallback then
-        t.completionCallback(tween._internals.CreateTweenCallbackData(t))
+    if tweener.completionCallback then
+        tweener.completionCallback(tween._internals.CreateTweenCallbackData(tweener.object, tweener.data))
     end
 
     table.remove(tweeners, index)
 end
 
 
----@param a tweener
+---@param tweener Tweener
 ---@param t number
-function tween._internals.AnimatePostition(a, t)
-    a.object.GetTransform().SetPositionWorld(tween.LerpV3(a.startValue, a.endValue, t))
+function tween._internals.AnimatePostition(tweener, t)
+    tweener.object.GetTransform().SetPositionWorld(tween.LerpV3(tweener.startValue, tweener.endValue, t))
 end
 
----@param a tweener
+---@param tweener Tweener
 ---@param t number
-function tween._internals.AnimateRotation(a, t)
-    a.object.GetTransform().SetRotation(tween.LerpAngleV3(a.startValue, a.endValue, t))
+function tween._internals.AnimateRotation(tweener, t)
+    tweener.object.GetTransform().SetRotation(tween.LerpAngleV3(tweener.startValue, tweener.endValue, t))
 end
 
----@param a tweener
+---@param tweener Tweener
 ---@param t number
-function tween._internals.AnimateScale(a, t)
-    a.object.GetTransform().SetScale(tween.LerpV3(a.startValue, a.endValue, t))
+function tween._internals.AnimateScale(tweener, t)
+    tweener.object.GetTransform().SetScale(tween.LerpV3(tweener.startValue, tweener.endValue, t))
 end
 
 

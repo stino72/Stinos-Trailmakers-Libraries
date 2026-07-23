@@ -1,254 +1,311 @@
 _G.animation = {
-    utils = {},
-    _internals = {}
+	utils = {},
+	_internals = {}
 }
 
----@class animationPlayer
+---@class AnimationPlayer
 ---@field object ModGameObject
 ---@field timeScale number
----@field loop loopModes
----@field startTransform table
----@field keyframes table
+---@field loop LoopModes
+---@field startTransform StartTransform
+---@field keyframes Keyframe[]
 ---@field animationIndex integer
 ---@field interupted boolean
 ---@field completionCallback function?
 ---@field data any?
-local animationPlayer = {}
-animationPlayer.__index = animationPlayer
+local AnimationPlayer = {}
+AnimationPlayer.__index = AnimationPlayer
 
-function animationPlayer:interupt()
-    self.interupted = true
+function AnimationPlayer:interupt()
+	self.interupted = true
 end
 
 
 ---@param timeScale number
-function animationPlayer:setTimeScale(timeScale)
-    self.timeScale = timeScale
+function AnimationPlayer:setTimeScale(timeScale)
+	self.timeScale = timeScale
 end
 
-
----@class animationCallbackData
----@field object ModGameObject
----@field data any?
-local animationCallbackData = {}
-animationCallbackData.__index = animationCallbackData
-
----@enum loopModes
+---@enum LoopModes
 animation.loopModes = {
-    never = "never",
-    loop = "loop",
-    pingPong = "ping pong"
+	never = "never",
+	loop = "loop",
+	pingPong = "ping pong"
 }
 
+---@class Keyframe
+---@field type string
+---@field endValue ModVector3
+---@field duration integer
+---@field easing Easing
+---@field easingType EasingType
+---@field parallel boolean
+local Keyframe = {}
+Keyframe.__index = Keyframe
+
+---@class StartTransform
+---@field position ModVector3
+---@field rotation ModVector3
+---@field scale ModVector3
+local StartTransform = {}
+StartTransform.__index = StartTransform
+
+---@class AnimationCallbackData
+---@field object ModGameObject
+---@field data any?
+local AnimationCallbackData = {}
+AnimationCallbackData.__index = AnimationCallbackData
 
 ---@param object ModGameObject
 ---@param data any?
----@return animationCallbackData
+---@return AnimationCallbackData
 function animation._internals.CreateCallbackData(object, data)
-    local instance = setmetatable({}, animationCallbackData)
+	local instance = setmetatable({}, AnimationCallbackData)
 
-    instance.object = object
-    instance.data = data
+	instance.object = object
+	instance.data = data
 
-    return instance
+	return instance
 end
+
 
 ---@param object ModGameObject
 ---@param animationList table
 ---@param timeScale number?
 ---@param CompletionCallback function?
 ---@param data any?
----@return animationPlayer?
+---@return AnimationPlayer?
 function animation.PlayAnimation(object, animationList, timeScale, CompletionCallback, data)
-    local instance = setmetatable({}, animationPlayer)
+	if #animationList["keyframes"] <= 0 then
+		tm.os.Log("Animation does not have keyframes")
+		return nil
+	end
 
-    instance.object = object
-    instance.loop = animationList["loop"]
-    instance.timeScale = 1 / (timeScale or 1)
-    instance.startTransform = animationList["start"]
-    instance.keyframes = animationList["keyframes"]
-    instance.animationIndex = 1
-    instance.interupted = false
+	local instance = setmetatable({}, AnimationPlayer)
 
-    if #instance.keyframes <= 0 then
-        Print("Animation does not have keyframes")
-        return nil
-    end
+	instance.object = object
+	instance.loop = animationList["loop"]
+	instance.timeScale = 1 / (timeScale or 1)
+	instance.startTransform = animation._internals.CreateStartTransform(animationList["start"])
 
-    if animationList["loop"] == animation.loopModes.pingPong then
-        animation.utils.ConbineTables(instance.keyframes, animation._internals.GenerateReversedKeyframes(animationList))
-    end
+	instance.keyframes = {}
+	for _, value in ipairs(animationList["keyframes"]) do
+		table.insert(instance.keyframes, animation._internals.CreateKeyFrame(value))
+	end
 
-    instance.completionCallback = CompletionCallback
-    instance.data = data
+	instance.animationIndex = 1
+	instance.interupted = false
 
-    animation._internals.ResetObjectPos(object, instance.startTransform)
+	if instance.loop == animation.loopModes.pingPong then
+		animation.utils.ConbineTables(instance.keyframes, animation._internals.GenerateReversedKeyframes(instance.keyframes, instance.startTransform))
+	end
 
-    local d = setmetatable({}, animationCallbackData)
-    d.object = object
-    d.data = instance
+	instance.completionCallback = CompletionCallback
+	instance.data = data
 
-    animation._internals.PlayAnimationFrame(d)
+	animation._internals.ResetObjectPos(object, instance.startTransform)
 
-    return instance
+	animation._internals.PlayAnimationFrame(tween._internals.CreateTweenCallbackData(object, instance))
+
+	return instance
 end
 
 
----@param anim table
-function animation._internals.GenerateReversedKeyframes(anim)
-    local keyframes = anim["keyframes"]
-    local reversedKeyframes = {}
-    local parallelBuffer = {}
+---@param keyframeData table
+---@return Keyframe
+function animation._internals.CreateKeyFrame(keyframeData)
+	local instance = setmetatable({}, Keyframe)
 
-    for i = #keyframes, 1, -1 do
-        ---@type table
-        local keyframe = keyframes[i]
-        local newKeyframe = animation.utils.TableCopy(keyframe)
-        local type = newKeyframe["type"]
+	instance.type = keyframeData["type"]
+	if instance.type != "wait" then
+		instance.endValue = animation.utils.TableToVector(keyframeData["endValue"])
+	end
 
-        local j = 1
+	instance.duration = keyframeData["duration"]
+	instance.easing = keyframeData["easing"] or easings.easing.Linear
+	instance.easingType = keyframeData["easingType"] or easings.easingType.In
 
-        if type == "wait" then
-            goto finalize
-        end
+	instance.parallel = keyframeData["parallel"] or false
 
-        while true do
-            if i - j < 1 then
-                newKeyframe["end value"] = anim["start"][type]
-                break
-            end
-
-            if keyframes[i - j]["type"] == type then
-                newKeyframe["end value"] = keyframes[i - j]["end value"]
-                break
-            end
-
-            j = j + 1
-        end
-
-        newKeyframe["easing type"] = easings.swap[newKeyframe["easing type"]]
-
-        ::finalize::
-        if newKeyframe["parallel"] == true then
-            table.insert(parallelBuffer, newKeyframe)
-        else
-            table.insert(reversedKeyframes, newKeyframe)
-            for index, value in ipairs(parallelBuffer) do
-                table.insert(reversedKeyframes, value)
-            end
-            parallelBuffer = {}
-        end
-    end
-
-    return reversedKeyframes
+	return instance
 end
+
+
+---@param transformData table
+---@return StartTransform
+function animation._internals.CreateStartTransform(transformData)
+	local instance = setmetatable({}, StartTransform)
+
+	instance.position = animation.utils.TableToVector(transformData["position"])
+	instance.rotation = animation.utils.TableToVector(transformData["rotation"])
+	instance.scale = animation.utils.TableToVector(transformData["scale"])
+
+	return instance
+end
+
+
+---@param keyframes Keyframe[]
+---@param startTransform StartTransform
+function animation._internals.GenerateReversedKeyframes(keyframes, startTransform)
+	local reversedKeyframes = {}
+	local parallelBuffer = {}
+
+	for i = #keyframes, 1, -1 do
+		---@type Keyframe
+		local keyframe = keyframes[i]
+
+		---@type Keyframe
+		local newKeyframe = animation.utils.TableCopy(keyframe)
+		local type = newKeyframe.type
+
+		if type != "wait" then
+			newKeyframe.endValue = GetEndValue(i, type, keyframes, startTransform)
+
+			newKeyframe.easingType = easings.swap[newKeyframe.easingType]
+		end
+
+		if newKeyframe.parallel == true then
+			table.insert(parallelBuffer, newKeyframe)
+		else
+			table.insert(reversedKeyframes, newKeyframe)
+			animation.utils.ConbineTables(reversedKeyframes, parallelBuffer)
+			parallelBuffer = {}
+		end
+	end
+
+	return reversedKeyframes
+end
+
+
+---@param keyFrameIndex integer
+---@param type string
+---@param keyframes Keyframe[]
+---@param startTransform StartTransform
+---@return ModVector3
+function GetEndValue(keyFrameIndex, type, keyframes, startTransform)
+	for i = 1, 5, 1 do
+		if keyFrameIndex - i < 1 then
+			return startTransform[type]
+		end
+
+		if keyframes[keyFrameIndex - i].type == type then
+			return keyframes[keyFrameIndex - i].endValue
+		end
+	end
+
+	tm.os.Log("animation: No previous position could be found")
+	return tm.vector3.Create()
+end
+
 
 
 ---@param object ModGameObject
----@param transform table
+---@param transform StartTransform
 function animation._internals.ResetObjectPos(object, transform)
-    object.GetTransform().SetPositionWorld(animation.utils.TableToVector(transform["position"]))
-    object.GetTransform().SetRotation(animation.utils.TableToVector(transform["rotation"]))
-    object.GetTransform().SetScale(animation.utils.TableToVector(transform["scale"]))
+	object.GetTransform().SetPositionWorld(transform.position)
+	object.GetTransform().SetRotation(transform.rotation)
+	object.GetTransform().SetScale(transform.scale)
 end
 
 
----@param data animationCallbackData -- FIX: also gets called with tweenCallbackData, 
+---@param data TweenCallbackData
 function animation._internals.PlayAnimationFrame(data)
-    ---@type animationPlayer
-    local aPlayer = data.data
+	---@type AnimationPlayer
+	local anim = data.data
 
-    if aPlayer.interupted then
-        return
-    end
+	if anim.interupted then
+		return
+	end
 
-    if aPlayer.animationIndex > #aPlayer.keyframes then
-        animation._internals.OnAnimationComplete(aPlayer)
-        return
-    end
+	if anim.animationIndex > #anim.keyframes then
+		animation._internals.OnAnimationComplete(anim)
+		return
+	end
 
-    if aPlayer.loop == animation.loopModes.pingPong and aPlayer.animationIndex == #aPlayer.keyframes * 0.5 + 1 then
-        if aPlayer.completionCallback then
-            aPlayer.completionCallback(animation._internals.CreateCallbackData(aPlayer.object, aPlayer.data))
-        end
-    end
+	if anim.loop == animation.loopModes.pingPong and anim.animationIndex == #anim.keyframes * 0.5 + 1 then
+		animation._internals.DoCompleteCallback(anim)
+	end
 
-    local a = aPlayer.keyframes[aPlayer.animationIndex]
-        
-    local type = a["type"]
+	---@type Keyframe
+	local keyframe = anim.keyframes[anim.animationIndex]
+	local type = keyframe.type
 
-    Print(aPlayer.animationIndex, type)
+	anim.animationIndex = anim.animationIndex + 1
 
-    while true do
-        aPlayer.animationIndex = aPlayer.animationIndex + 1
+	while anim.animationIndex <= #anim.keyframes do
+		---@type Keyframe
+		local newKeyframe = anim.keyframes[anim.animationIndex]
 
-        if aPlayer.animationIndex > #aPlayer.keyframes then
-            break
-        end
+		if newKeyframe.parallel == true then
+			animation._internals.PlayParallel(anim.object, newKeyframe, anim.timeScale)
+		else
+			break
+		end
 
-        local animNew = aPlayer.keyframes[aPlayer.animationIndex]
+		anim.animationIndex = anim.animationIndex + 1
+	end
 
-        if animNew["parallel"] == true then
-            animation._internals.PlayParallel(aPlayer.object, animNew, aPlayer.timeScale)
-        else
-            break
-        end
-    end
+	if type == "wait" then
+		timer.Create(keyframe.duration * anim.timeScale, animation._internals.PlayAnimationFrame, anim)
+		return
+	end
 
-    if type == "wait" then
-        timer.Create(a["duration"] * aPlayer.timeScale, animation._internals.PlayAnimationFrame, aPlayer)
-        return
-    end
-
-
-    local f = tween.TweenFunctions[type]
-    f(aPlayer.object, animation.utils.TableToVector(a["end value"]), a["duration"] * aPlayer.timeScale, a["easing"], a["easing type"], animation._internals.PlayAnimationFrame, aPlayer)
+	local tweenFunction = tween.TweenFunctions[type]
+	local duration = keyframe.duration * anim.timeScale
+	tweenFunction(anim.object, keyframe.endValue, duration, keyframe.easing, keyframe.easingType, animation._internals.PlayAnimationFrame, anim)
 end
 
 
 ---@param object ModGameObject
----@param keyframe table
+---@param keyframe Keyframe
 ---@param timeScale number
 function animation._internals.PlayParallel(object, keyframe, timeScale)
-    local f = tween.TweenFunctions[keyframe["type"]]
-    f(object, animation.utils.TableToVector(keyframe["end value"]), keyframe["duration"] * timeScale, keyframe["easing"], keyframe["easing type"])
+	local tweenFunction = tween.TweenFunctions[keyframe.type]
+	local duration = keyframe.duration * timeScale
+	tweenFunction(object, keyframe.endValue, duration, keyframe.easing, keyframe.easingType)
 end
 
 
----@param anim animationPlayer
+---@param anim AnimationPlayer
 function animation._internals.OnAnimationComplete(anim)
-    if anim.completionCallback then
-        anim.completionCallback(animation._internals.CreateCallbackData(anim.object, anim.data))
-    end
+	animation._internals.DoCompleteCallback(anim)
 
-    if anim.loop == animation.loopModes.never then
-        return
-    end
+	if anim.loop == animation.loopModes.never then
+		return
+	end
 
-    if anim.loop == animation.loopModes.loop then
-        animation._internals.ResetObjectPos(anim.object, anim.startTransform)
-    end
+	if anim.loop == animation.loopModes.loop then
+		animation._internals.ResetObjectPos(anim.object, anim.startTransform)
+	end
 
-    anim.animationIndex = 1
-    animation._internals.PlayAnimationFrame(animation._internals.CreateCallbackData(anim.object, anim))
+	anim.animationIndex = 1
+	animation._internals.PlayAnimationFrame(tween._internals.CreateTweenCallbackData(anim.object, anim))
+end
+
+
+---@param anim AnimationPlayer
+function animation._internals.DoCompleteCallback(anim)
+	if anim.completionCallback then
+		anim.completionCallback(animation._internals.CreateCallbackData(anim.object, anim.data))
+	end
 end
 
 
 ---@param table table
 ---@return ModVector3
 function animation.utils.TableToVector(table)
-    return tm.vector3.Create(table.x, table.y, table.z)
-end 
+	return tm.vector3.Create(table.x, table.y, table.z)
+end
 
 
 ---@param t table
 ---@return table
 function animation.utils.TableCopy(t)
-    local t2 = {}
-    for k,v in pairs(t) do
-        t2[k] = v
-    end
-    return t2
+	local t2 = {}
+	for k,v in pairs(t) do
+		t2[k] = v
+	end
+	return t2
 end
 
 
@@ -256,8 +313,8 @@ end
 ---@param a table
 ---@return table
 function animation.utils.ConbineTables(t, a)
-    for i, v in ipairs(a) do
-        table.insert(t, v)
-    end
-    return t
+	for i, v in ipairs(a) do
+		table.insert(t, v)
+	end
+	return t
 end

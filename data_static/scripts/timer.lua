@@ -1,7 +1,8 @@
 ---@meta
----API for timers, made by Stino
-
-_G.timer = {}
+---Timer library, made by Stino
+_G.timer = {
+	_internals = {}
+}
 
 ---@class Timer
 ---@field duration number
@@ -53,14 +54,14 @@ function timer.Create(duration, completeCallback, data, deleteOnComplete, loop, 
 end
 
 
----@param timer Timer
+---@param timer_ref Timer
 ---@return TimerCallbackData
-function CreateCallbackData(timer)
+function timer._internals.CreateCallbackData(timer_ref)
     local instance = setmetatable({}, TimerCallbackData)
 
-    instance.timer = timer
-    instance.timeLeft = math.max(timer.timeLeft, 0)
-    instance.data = timer.data
+    instance.timer = timer_ref
+    instance.timeLeft = math.max(timer_ref.timeLeft, 0)
+    instance.data = timer_ref.data
 
     return instance
 end
@@ -97,42 +98,43 @@ function Timer:delete()
 end
 
 
+---Updates all active timers, this **must** be called every process frame.
 function timer.UpdateTimers()
     for index, value in ipairs(timers) do
-        _UpdateTimer(value, index)
+        timer._internals.UpdateTimer(value, index)
     end
 end
 
 
----@param timer Timer
+---@param timer_ref Timer
 ---@param index integer
-function _UpdateTimer(timer, index)
-    if not timer.active then
+function timer._internals.UpdateTimer(timer_ref, index)
+    if not timer_ref.active then
         return
     end
 
-    timer.timeLeft = timer.timeLeft - tm.os.GetModDeltaTime()
+    timer_ref.timeLeft = timer_ref.timeLeft - tm.os.GetModDeltaTime()
 
-    if timer.progressCallback then
-        timer.progressCallback(CreateCallbackData(timer))
+    if timer_ref.progressCallback then
+        timer_ref.progressCallback(timer._internals.CreateCallbackData(timer_ref))
     end
 
-    if timer.timeLeft > 0 then
+    if timer_ref.timeLeft > 0 then
         return
     end
 
-    timer.completeCallback(CreateCallbackData(timer))
+    timer_ref.completeCallback(timer._internals.CreateCallbackData(timer_ref))
 
-    if timer.loop then
-        timer.timeLeft = timer.duration + timer.timeLeft
+    if timer_ref.loop then
+        timer_ref.timeLeft = timer_ref.duration + timer_ref.timeLeft
         return
     end
 
-    if timer.deleteOnComplete then
+    if timer_ref.deleteOnComplete then
         table.remove(timers, index)
         return
     end
 
-    timer.active = false
-    timer.timeLeft = timer.duration
+    timer_ref.active = false
+    timer_ref.timeLeft = timer_ref.duration
 end

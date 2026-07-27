@@ -1,3 +1,7 @@
+---@meta
+---Tween library, made by stino.
+---
+---a Tweener can animation either the position, rotation or scale of a `ModGameObject`
 _G.tween = {
     _internals = {}
 }
@@ -31,7 +35,7 @@ local tweeners = {}
 ---@param duration number
 ---@param easing Easing?
 ---@param easingType EasingType?
----@param CompletionCallback function?
+---@param CompletionCallback fun(data: TweenCallbackData)?
 ---@param data any?
 function tween._internals.SetupTweener(animationCallback, object, startValue, endValue, duration, easing, easingType, CompletionCallback, data)
     local instance = setmetatable({}, Tweener)
@@ -63,50 +67,55 @@ function tween._internals.CreateTweenCallbackData(object, data)
     return instance
 end
 
-
----@param object ModGameObject
----@param endPostition ModVector3
----@param duration number
----@param easing Easing?
----@param easingType EasingType?
----@param CompletionCallback function?
----@param data any?
-function tween.AnimatePosition(object, endPostition, duration, easing, easingType, CompletionCallback, data)
-    tween._internals.SetupTweener(tween._internals.AnimatePostition, object, object.GetTransform().GetPositionWorld(), endPostition, duration, easing, easingType, CompletionCallback, data)
+---Creates a Tweener that animations the position of `object`.
+---@param object ModGameObject The object that will be animated.
+---@param endPostition ModVector3 The end position of the Tween, start position is the position of `object` when the function is called.
+---@param duration number The amount of time the tweener will take in seconds.
+---@param easing Easing? What easing the tweener will uses, if nothing is set it will be linear.
+---@param easingType EasingType? What easingType the tweener will uses, if nothing is set it will be In.
+---@param CompletionCallback fun(data: TweenCallbackData)? Function to execute when the Tween is completed.
+---@param data any? Arbitrary data passed to the callback function.
+function tween.CreatePositionTween(object, endPostition, duration, easing, easingType, CompletionCallback, data)
+    tween._internals.SetupTweener(tween._internals.TweenPosition, object, object.GetTransform().GetPositionWorld(), endPostition, duration, easing, easingType, CompletionCallback, data)
 end
 
 
----@param object ModGameObject
----@param endRotation ModVector3
----@param duration number
----@param easing Easing?
----@param easingType EasingType?
----@param CompletionCallback function?
----@param data any?
-function tween.AnimateRotation(object, endRotation, duration, easing, easingType, CompletionCallback, data)
-    tween._internals.SetupTweener(tween._internals.AnimateRotation, object, object.GetTransform().GetRotation(), endRotation, duration, easing, easingType, CompletionCallback, data)
+---Creates a Tweener that animations the rotation of `object`.
+---@param object ModGameObject The object that will be animated.
+---@param endRotation ModVector3 The end rotation of the Tween, start position is the position of `object` when the function is called.
+---@param duration number The amount of time the tweener will take in seconds.
+---@param easing Easing? What easing the tweener will uses, if nothing is set it will be linear.
+---@param easingType EasingType? What easingType the tweener will uses, if nothing is set it will be In.
+---@param CompletionCallback fun(data: TweenCallbackData)? Function to execute when the Tween is completed.
+---@param data any? Arbitrary data passed to the callback function.
+function tween.CreateRotationTween(object, endRotation, duration, easing, easingType, CompletionCallback, data)
+    tween._internals.SetupTweener(tween._internals.TweenRotation, object, object.GetTransform().GetRotation(), endRotation, duration, easing, easingType, CompletionCallback, data)
 end
 
 
----@param object ModGameObject
----@param endScale ModVector3
----@param duration number
----@param easing Easing?
----@param easingType EasingType?
----@param CompletionCallback function?
----@param data any?
-function tween.AnimateScale(object, endScale, duration, easing, easingType, CompletionCallback, data)
-    tween._internals.SetupTweener(tween._internals.AnimateScale, object, object.GetTransform().GetScale(), endScale, duration, easing, easingType, CompletionCallback, data)
+---Creates a Tweener that animations the scale of `object`.
+---@param object ModGameObject The object that will be animated.
+---@param endScale ModVector3 The end scale of the Tween, start position is the position of `object` when the function is called.
+---@param duration number The amount of time the tweener will take in seconds.
+---@param easing Easing? What easing the tweener will uses, if nothing is set it will be linear.
+---@param easingType EasingType? What easingType the tweener will uses, if nothing is set it will be In.
+---@param CompletionCallback fun(data: TweenCallbackData)? Function to execute when the Tween is completed.
+---@param data any? Arbitrary data passed to the callback function.
+function tween.CreateScaleTween(object, endScale, duration, easing, easingType, CompletionCallback, data)
+    tween._internals.SetupTweener(tween._internals.TweenScale, object, object.GetTransform().GetScale(), endScale, duration, easing, easingType, CompletionCallback, data)
 end
 
+
+---Reference for the tween functions by name.
 ---@type function[]
 tween.TweenFunctions = {
-    ["position"] = tween.AnimatePosition,
-    ["rotation"] = tween.AnimateRotation,
-    ["scale"] = tween.AnimateScale,
+    ["position"] = tween.CreatePositionTween,
+    ["rotation"] = tween.CreateRotationTween,
+    ["scale"] = tween.CreateScaleTween,
 }
 
 
+---Updates all Tweeners, this **must** be called every process frame.
 function tween.UpdateTweeners()
     for index, value in ipairs(tweeners) do
         tween._internals.UpdateAnimations(value, index)
@@ -137,23 +146,26 @@ end
 
 ---@param tweener Tweener
 ---@param t number
-function tween._internals.AnimatePostition(tweener, t)
+function tween._internals.TweenPosition(tweener, t)
     tweener.object.GetTransform().SetPositionWorld(tween.LerpV3(tweener.startValue, tweener.endValue, t))
 end
 
 ---@param tweener Tweener
 ---@param t number
-function tween._internals.AnimateRotation(tweener, t)
+function tween._internals.TweenRotation(tweener, t)
     tweener.object.GetTransform().SetRotation(tween.LerpAngleV3(tweener.startValue, tweener.endValue, t))
 end
 
 ---@param tweener Tweener
 ---@param t number
-function tween._internals.AnimateScale(tweener, t)
+function tween._internals.TweenScale(tweener, t)
     tweener.object.GetTransform().SetScale(tween.LerpV3(tweener.startValue, tweener.endValue, t))
 end
 
 
+---Lerps from `a` to `b` with `t`  
+---return will be equal to `a` when `t` is 0 and return will be equal to `b` when `t` is 1.  
+---`t` can to outside of [0, 1].
 ---@param a number
 ---@param b number 
 ---@param t number
@@ -163,6 +175,9 @@ function tween.Lerp(a, b, t)
 end
 
 
+---Lerps all axis from `a` to `b` with `t`  
+---return will be equal to `a` when `t` is 0 and return will be equal to `b` when `t` is 1.  
+---`t` can to outside of [0, 1].
 ---@param a ModVector3
 ---@param b ModVector3
 ---@param t number
@@ -172,6 +187,10 @@ function tween.LerpV3(a, b, t)
 end
 
 
+---Lerps from `a` to `b` with `t`  
+---will always take the shortest way in range [-180, 180]  
+---return will be equal to `a` when `t` is 0 and return will be equal to `b` when `t` is 1.  
+---`t` can to outside of [0, 1].
 ---@param a number
 ---@param b number 
 ---@param t number
@@ -180,6 +199,11 @@ function tween.LerpAngle(a, b, t)
     return a + ((b - a - 180) % 360 - 180) * t
 end
 
+
+---Lerps all axis from `a` to `b` with `t`  
+---will always take the shortest way in range [-180, 180]  
+---return will be equal to `a` when `t` is 0 and return will be equal to `b` when `t` is 1.  
+---`t` can to outside of [0, 1].
 ---@param a ModVector3
 ---@param b ModVector3
 ---@param t number

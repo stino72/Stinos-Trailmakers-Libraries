@@ -1,8 +1,21 @@
+---@meta
+---Animation library, made by Stino
+---
+---Runs a series of tweeners on a single `ModGameObject` specified in a table with start positions and keyframes.  
+---see exampleAnimation.json. < TODO make this lol
+---
+---requires:  
+---	- easings.lua  
+---	- tween.lua  
+---	- timer.lua  
+---
+---make sure they run with `tm.os.DoFile` in main.lua
 _G.animation = {
 	utils = {},
 	_internals = {}
 }
 
+---Animation
 ---@class AnimationPlayer
 ---@field object ModGameObject
 ---@field timeScale number
@@ -16,16 +29,26 @@ _G.animation = {
 local AnimationPlayer = {}
 AnimationPlayer.__index = AnimationPlayer
 
+---Stops the animation when it reaches the next keyframe.
 function AnimationPlayer:interupt()
 	self.interupted = true
 end
 
 
----@param timeScale number
+---Sets the timeScale when it reaches the next keyframe.
+---@param timeScale number 
 function AnimationPlayer:setTimeScale(timeScale)
 	self.timeScale = timeScale
 end
 
+
+---Options for how the animation should loop.
+---
+---`never` - The animation will never loop
+---
+---`loop` - The animation will return back to the start once its completed.
+---
+---`pingPong` - The animation will play in reverse when its completed, (if the parallel frames dont have the same lenght as their main frame it might not reverse correctly)
 ---@enum LoopModes
 animation.loopModes = {
 	never = "never",
@@ -69,12 +92,13 @@ function animation._internals.CreateCallbackData(object, data)
 end
 
 
----@param object ModGameObject
----@param animationList table
----@param timeScale number?
----@param CompletionCallback function?
----@param data any?
----@return AnimationPlayer?
+---Plays an animation with the given keyframes.
+---@param object ModGameObject The object that will be animated
+---@param animationList table The List of keyframes as well as the loop mode.
+---@param timeScale number?	Timer scale that animation will be played at, 1 is normal speed, 2 is twice as fast ect.
+---@param CompletionCallback fun(data: AnimationCallbackData)? Function to execute when the Animation is completed, will be called at the end of every loop.
+---@param data any? Arbitrary data passed to the callback function.
+---@return AnimationPlayer? AnimationPlayer Reference to the animation.
 function animation.PlayAnimation(object, animationList, timeScale, CompletionCallback, data)
 	if #animationList["keyframes"] <= 0 then
 		tm.os.Log("Animation does not have keyframes")
@@ -159,7 +183,7 @@ function animation._internals.GenerateReversedKeyframes(keyframes, startTransfor
 		local type = newKeyframe.type
 
 		if type != "wait" then
-			newKeyframe.endValue = GetEndValue(i, type, keyframes, startTransform)
+			newKeyframe.endValue = animation._internals.GetEndValue(i, type, keyframes, startTransform)
 
 			newKeyframe.easingType = easings.swap[newKeyframe.easingType]
 		end
@@ -182,7 +206,7 @@ end
 ---@param keyframes Keyframe[]
 ---@param startTransform StartTransform
 ---@return ModVector3
-function GetEndValue(keyFrameIndex, type, keyframes, startTransform)
+function animation._internals.GetEndValue(keyFrameIndex, type, keyframes, startTransform)
 	for i = 1, 5, 1 do
 		if keyFrameIndex - i < 1 then
 			return startTransform[type]

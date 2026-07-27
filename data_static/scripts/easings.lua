@@ -9,7 +9,7 @@ local c5 = (2 * math.pi) / 4.5
 local n1 = 7.5625
 local d1 = 2.75
 
----easings [https://easings.net/]
+---easings https://easings.net/
 ---@enum Easing
 easings.easing = {
     Linear = "Linear",
@@ -32,6 +32,7 @@ easings.easingType = {
     InOut = "InOut",
 }
 
+---table to reverse the easing type
 easings.swap = {
     [easings.easingType.In] = easings.easingType.Out,
     [easings.easingType.Out] = easings.easingType.In,
@@ -353,9 +354,10 @@ local easingFunctions = {
     },
 }
 
+---Returns the easing Functions corresponding to `easing` and `easingType`, See https://easings.net/
 ---@param easing Easing
 ---@param easingType EasingType
----@return function
+---@return fun(x: number)
 function easings.GetEasingFunction(easing, easingType)
     return easingFunctions[easing][easingType]
 end

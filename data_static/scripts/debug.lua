@@ -1,18 +1,3 @@
-function Print(...)
-    local s = ""
-    for _, v in ipairs({...}) do
-        if type(v) == "table" then
-            s = s .. " " .. _Encode(v)
-        else
-            s = s .. " " .. tostring(v)
-        end
-    end
-
-    tm.playerUI.SendChatMessage("Debug - Print:", s, tm.color.White())
-    tm.os.Log(s)
-end
-
-
 local function escape_str(s)
     local replacements = {
         ['"']  = '\\"',
@@ -42,7 +27,7 @@ local function is_array(t)
 end
 
 
-function _Encode(value)
+local function Encode(value)
     local t = type(value)
 
     if t == "nil" then
@@ -62,14 +47,14 @@ function _Encode(value)
 
         if is_array(value) then
             for i = 1, #value do
-                table.insert(result, _Encode(value[i]))
+                table.insert(result, Encode(value[i]))
             end
             return "[" .. table.concat(result, ",") .. "]"
         else
             for k, v in pairs(value) do
                 table.insert(
                     result,
-                    _Encode(tostring(k)) .. ":" .. _Encode(v)
+                    Encode(tostring(k)) .. ":" .. Encode(v)
                 )
             end
             return "{" .. table.concat(result, ",") .. "}"
@@ -78,4 +63,19 @@ function _Encode(value)
     else
         return t
     end
+end
+
+---Prints all inputs seperated by a space.
+function Print(...)
+    local s = ""
+    for _, v in ipairs({...}) do
+        if type(v) == "table" then
+            s = s .. " " .. Encode(v)
+        else
+            s = s .. " " .. tostring(v)
+        end
+    end
+
+    tm.playerUI.SendChatMessage("Debug - Print:", s, tm.color.White())
+    tm.os.Log(s)
 end

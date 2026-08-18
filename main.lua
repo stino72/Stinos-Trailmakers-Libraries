@@ -1,58 +1,30 @@
-tm.os.DoFile("scripts/debug")
+tm.os.DoFile("scripts/libraries/debug")
 
-tm.os.DoFile("scripts/shell") --Neut's Shell Mod v 0.2
-shell.init()
-
-tm.os.DoFile("scripts/timer")
-tm.os.DoFile("scripts/animation")
-tm.os.DoFile("scripts/easings")
-tm.os.DoFile("scripts/tween")
+tm.os.DoFile("scripts/libraries/timer")
+tm.os.DoFile("scripts/libraries/animation")
+tm.os.DoFile("scripts/libraries/easings")
+tm.os.DoFile("scripts/libraries/tween")
 
 tm.os.SetModTargetDeltaTime(1/60)
 
----@type ModGameObject
-local obj
+tm.playerUI.AddUILabel(0, 1, "<align=left>Examaples are stored in")
+tm.playerUI.AddUILabel(0, 1, "<align=left>  data_static/scripts/examples/")
+tm.playerUI.AddUILabel(0, 1, "<align=left>Libraries are stored in")
+tm.playerUI.AddUILabel(0, 1, "<align=left>  data_static/scripts/libraries/")
+tm.playerUI.AddUILabel(0, 1, "Examples:")
 
----@type AnimationPlayer?
-local a
-
----@param player ModPlayer
-function OnPlayerJoined(player)
-    if player.playerId != 0 then
-        return
-    end
-
-    tm.playerUI.AddUIButton(0, "play", "Play", Play)
-    tm.playerUI.AddUIButton(0, "stop", "Stop", Stop)
-
-    obj = tm.physics.SpawnObject(tm.vector3.Create(0, 300, 0), "PFB_Container_Blue_Dynamic")
-    obj.SetIsStatic(true)
-end
-
+tm.os.DoFile("scripts/examples/exampleAnimation")
+tm.os.DoFile("scripts/examples/exampleTween")
+tm.os.DoFile("scripts/examples/exampleTimer")
 
 function update()
-    shell.flush()
-    timer.UpdateTimers()
-    tween.UpdateTweeners()
+	timer.UpdateTimers()
+	tween.UpdateTweeners()
 end
 
+local testTable = {
+	tm.vector3.Create(1, 2, 3),
+	tm.vector3.Create(),
+}
 
-function Play(param)
-    a = animation.PlayAnimation(obj, json.parse(tm.os.ReadAllText_Static("animations/monorail animation.json")), tonumber(param), OnAnimationComplete, "complete")
-end
-shell.addCommand(Play, "play")
-
-
-function OnAnimationComplete(data)
-    Print(data.data)
-end
-
-
-function Stop()
-    if a then
-        a:interupt()
-    end
-end
-shell.addCommand(Stop, "stop")
-
-tm.players.OnPlayerJoined.add(OnPlayerJoined)
+Print(testTable)

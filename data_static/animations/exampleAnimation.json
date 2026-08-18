@@ -1,0 +1,62 @@
+{
+	"loop" : "loop",
+	"start" : {
+		"position" : {
+			"x" : 0,
+			"y" : 350,
+			"z" : 0
+		},
+		"rotation" : {
+			"x" : 0,
+			"y" : 0,
+			"z" : 0
+		},
+		"scale" : {
+			"x" : 1,
+			"y" : 1,
+			"z" : 1
+		}
+	},
+	"keyframes" : [
+		{
+			"type" : "position",
+			"endValue" : {
+				"x" : 0,
+				"y" : 300,
+				"z" : 0
+			},
+			"duration" : 2,
+			"easing" : "Bounce",
+			"easingType" : "Out",
+			"parallel" : false
+		},
+		{
+			"type" : "wait",
+			"duration" : 1,
+		},
+		{
+			"type" : "position",
+			"endValue" : {
+				"x" : 0,
+				"y" : 300,
+				"z" : 20
+			},
+			"duration" : 2,
+			"easing" : "Sine",
+			"easingType" : "Out",
+			"parallel" : false
+		},
+		{
+			"type" : "rotation",
+			"endValue" : {
+				"x" : 0,
+				"y" : 90,
+				"z" : 0
+			},
+			"duration" : 2,
+			"easing" : "Elastic",
+			"easingType" : "InOut",
+			"parallel" : true
+		}
+	]
+}

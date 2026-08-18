@@ -2,12 +2,12 @@
 ---Animation library, made by Stino
 ---
 ---Runs a series of tweeners on a single `ModGameObject` specified in a table with start positions and keyframes.  
----see exampleAnimation.json. < TODO make this lol
+---see exampleAnimation.json.
 ---
----requires:  
----	- easings.lua  
----	- tween.lua  
----	- timer.lua  
+---requires:
+--- - easings.lua
+--- - tween.lua
+--- - timer.lua
 ---
 ---make sure they run with `tm.os.DoFile` in main.lua
 _G.animation = {
@@ -40,7 +40,6 @@ end
 function AnimationPlayer:setTimeScale(timeScale)
 	self.timeScale = timeScale
 end
-
 
 ---Options for how the animation should loop.
 ---
@@ -95,7 +94,7 @@ end
 ---Plays an animation with the given keyframes.
 ---@param object ModGameObject The object that will be animated
 ---@param animationList table The List of keyframes as well as the loop mode.
----@param timeScale number?	Timer scale that animation will be played at, 1 is normal speed, 2 is twice as fast ect.
+---@param timeScale number? Timer scale that animation will be played at, 1 is normal speed, 2 is twice as fast ect.
 ---@param CompletionCallback fun(data: AnimationCallbackData)? Function to execute when the Animation is completed, will be called at the end of every loop.
 ---@param data any? Arbitrary data passed to the callback function.
 ---@return AnimationPlayer? AnimationPlayer Reference to the animation.

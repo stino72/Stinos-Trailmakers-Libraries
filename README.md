@@ -10,7 +10,7 @@ To use:
 Copy the `libraries` folder into your project and use `tm.os.DoFile("<path to file>")` to use it.
 
 Animation file format:
-```json
+```jsonc
 {
 	"loop" : "loop", // loop mode of the animation, Options [never, loop, ping pong]
 	"start" : { // start transform of the object
